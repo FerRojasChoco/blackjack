@@ -8,6 +8,7 @@ import main.java.com.chocoEngine.core.ObjectLoader;
 import main.java.com.chocoEngine.core.RenderManager;
 import main.java.com.chocoEngine.core.WindowManager;
 import main.java.com.chocoEngine.core.entity.Model;
+import main.java.com.chocoEngine.core.entity.Texture;
 
 public class TestGame implements ILogic {
 
@@ -31,20 +32,26 @@ public class TestGame implements ILogic {
         renderer.init();
 
         float[] vertices = {
-                        -0.5f, 0.5f, 0f,
-                        -0.5f, -0.5f, 0f,
-                        0.5f, -0.5f, 0f,
-                        0.5f, -0.5f, 0f,
-                        0.5f, 0.5f, 0f,
-                        -0.5f, 0.5f, 0f
+                        -0.5f, 0.5f, 0.0f,
+                        -0.5f, -0.5f, 0.0f,
+                        0.5f, -0.5f, 0.0f,
+                        0.5f, 0.5f, 0.0f
         };
 
         int[] indices = {
-            0, 1, 3, 
-            3, 1, 2
+            0, 1, 2, 
+            0, 2, 3
         };
 
-        model = loader.loadModel(vertices, indices);
+        float[] textureCoords = {
+            0,0,
+            0,1,
+            1,1,
+            1,0
+        };
+
+        model = loader.loadModel(vertices, textureCoords, indices);
+        model.setTexture(new Texture(loader.loadTexture("textures/grassblock.png")));
     }
 
     @Override
