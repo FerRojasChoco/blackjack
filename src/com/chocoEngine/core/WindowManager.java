@@ -31,6 +31,7 @@ public class WindowManager {
         projectionMatrix = new Matrix4f();
     }
 
+    @SuppressWarnings("unused")
     public void init(){
         GLFWErrorCallback.createPrint(System.err).set();
 
