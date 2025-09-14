@@ -8,10 +8,9 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 
+import main.java.com.chocoEngine.core.utils.Consts;
+
 public class WindowManager {
-    public static final float FOV = (float) Math.toRadians(60);
-    public static final float Z_NEAR = 0.01f;
-    public static final float Z_FAR = 1000f;
 
     private final String title;
     
@@ -174,12 +173,12 @@ public class WindowManager {
 
     public Matrix4f updateProjectionMatrix(){
         float aspectRatio = width/height;
-        return projectionMatrix.setPerspective(FOV, aspectRatio, Z_NEAR, Z_FAR);
+        return projectionMatrix.setPerspective(Consts.FOV, aspectRatio, Consts.Z_NEAR, Consts.Z_FAR);
     }
 
     public Matrix4f updateProjetionMatrix4f(Matrix4f matrix, int width, int height){
         float aspectRatio = width/height;
-        return matrix.setPerspective(FOV, aspectRatio, Z_NEAR, Z_FAR);
+        return matrix.setPerspective(Consts.FOV, aspectRatio, Consts.Z_NEAR, Consts.Z_FAR);
     }
     
 }

@@ -1,21 +1,22 @@
 package main.java.com.chocoEngine.test;
 
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import main.java.com.chocoEngine.core.Camera;
 import main.java.com.chocoEngine.core.ILogic;
+import main.java.com.chocoEngine.core.MouseInput;
 import main.java.com.chocoEngine.core.ObjectLoader;
 import main.java.com.chocoEngine.core.RenderManager;
 import main.java.com.chocoEngine.core.WindowManager;
 import main.java.com.chocoEngine.core.entity.Entity;
 import main.java.com.chocoEngine.core.entity.Model;
 import main.java.com.chocoEngine.core.entity.Texture;
+import main.java.com.chocoEngine.core.utils.Consts;
 
 public class TestGame implements ILogic {
-
-    private static final float CAMERA_MOVESPEED = 0.05f;
     
     private final RenderManager renderer;
     private final ObjectLoader loader;
@@ -128,9 +129,16 @@ public class TestGame implements ILogic {
     }
 
     @Override
-    public void update() {
+    public void update(float interval, MouseInput mouseInput) {
         //can this be done more efficiently?
-        camera.movePosition(cameraInc.x * CAMERA_MOVESPEED, cameraInc.y * CAMERA_MOVESPEED, cameraInc.z * CAMERA_MOVESPEED);
+        camera.movePosition(cameraInc.x * Consts.CAMERA_STEP, cameraInc.y * Consts.CAMERA_STEP, cameraInc.z * Consts.CAMERA_STEP);
+
+        if (mouseInput.isRightBtnPressed()){
+            
+            Vector2f rotVec = mouseInput.getDisplayVec();
+            camera.moveRotation(rotVec.x * Consts.MOUSE_SENS, rotVec.y * Consts.MOUSE_SENS, 0);
+
+        }
 
         entity.incRotation(0.05f, 0.5f, 0.0f);
     }

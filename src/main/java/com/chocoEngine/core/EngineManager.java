@@ -25,6 +25,7 @@ public class EngineManager {
     private boolean isRunning;
 
     private WindowManager window;
+    private MouseInput mouseInput;
     private GLFWErrorCallback errorCallback;
     private ILogic gameLogic;
 
@@ -33,9 +34,10 @@ public class EngineManager {
 
         window = Launcher.getWindow();
         gameLogic = Launcher.getGame();
-
+        mouseInput = new MouseInput();
         window.init();
         gameLogic.init();
+        mouseInput.init();
     }
 
     public void start() throws Exception{
@@ -64,7 +66,11 @@ public class EngineManager {
             unprocessedTime += passedTime / (double)NANOSECOND;
             frameCounter += passedTime;
 
-            input();
+            /*Fix: og code places the input() call here, but there's a problem with this, it should be in the if(render)
+            bc of how the input detection works, it is a minor detail and in the final version of the game it can be
+            tested to see whether if it affects that much or not during gameplay*/
+            
+            //input();
             
             while(unprocessedTime > frameTime){
                 render = true;
@@ -82,7 +88,8 @@ public class EngineManager {
             }
 
             if(render){
-                update();
+                input();
+                update(frameTime);  //fixed after tuto
                 render();
                 frames++;
 
@@ -101,6 +108,7 @@ public class EngineManager {
     }
 
     private void input(){
+        mouseInput.input();
         gameLogic.input();
     }
 
@@ -109,8 +117,8 @@ public class EngineManager {
         window.update();
     }
 
-    private void update(){
-        gameLogic.update();
+    private void update(float interval){
+        gameLogic.update(interval, mouseInput);
     }
 
     private void cleanup(){
