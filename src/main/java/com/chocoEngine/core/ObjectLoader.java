@@ -6,6 +6,9 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joml.Vector2f;
+import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -24,6 +27,157 @@ public class ObjectLoader {
     private List<Integer> vaos = new ArrayList<>();
     private List<Integer> vbos = new ArrayList<>();
     private List<Integer> textures = new ArrayList<>();
+
+    public Model loadOBJModel(String fileName){
+        List<String> lines = Utils.readAllLines(fileName);
+
+        List<Vector3f> vertices = new ArrayList<>();
+        List<Vector3f> normals = new ArrayList<>();
+        List<Vector2f> textures = new ArrayList<>();
+        List<Vector3i> faces = new ArrayList<>();
+
+        for(String line : lines){
+            String[] tokens = line.split("\\s+");
+
+            switch (tokens[0]){
+                
+                case "v":       //vertices
+
+                    Vector3f verticesVec = new Vector3f(
+                        Float.parseFloat(tokens[1]),
+                        Float.parseFloat(tokens[2]),
+                        Float.parseFloat(tokens[3])
+                    );
+
+                    vertices.add(verticesVec);
+
+                    break;
+
+                case "vt":      //vert textures
+                    
+                    Vector2f textureVec = new Vector2f(
+                        Float.parseFloat(tokens[1]),
+                        Float.parseFloat(tokens[2])
+                    );
+
+                    textures.add(textureVec);
+
+                    break;
+
+                case "vn":      //vert normals
+
+                    Vector3f normalsVec = new Vector3f(
+                        Float.parseFloat(tokens[1]),
+                        Float.parseFloat(tokens[2]),
+                        Float.parseFloat(tokens[3])
+                    );
+
+                    normals.add(normalsVec);
+
+                    break;
+
+                case "f":       //faces
+
+                    List<Vector3i> polygon = new ArrayList<>();
+                    for ( int k = 0; k < tokens.length; k++){
+                        if (!tokens[k].isEmpty()){
+                            processFace(tokens[k], polygon);
+                        }
+                    }
+                    //og way of doing, this is limiting the types of 3d models .obj that it can render
+                    // processFace(tokens[1], faces);
+                    // processFace(tokens[2], faces);
+                    // processFace(tokens[3], faces);
+
+                    //OPTIMIZED W/ W COMMENT
+                    for (int k = 1; k < polygon.size() - 1; k++){
+                        faces.add(polygon.get(0));
+                        faces.add(polygon.get(k));
+                        faces.add(polygon.get(k + 1));
+                    }
+                    
+                    break;  
+                
+                default:
+                    break;
+            }
+        }
+
+        List<Integer> indices = new ArrayList<>();
+        float[] verticesArr = new float[vertices.size() * 3];
+        int i = 0;
+
+        for (Vector3f pos : vertices){
+            verticesArr[i * 3] = pos.x;
+            verticesArr[i * 3 + 1] = pos.y;
+            verticesArr[i * 3 + 2] = pos.z;
+            i++;
+        }
+
+        float[] textureCoordArr = new float[vertices.size() * 2];
+        float[] normalArr = new float[vertices.size() * 3];
+        
+        for (Vector3i face : faces){
+            
+            processVertex(face.x, face.y, face.z, textures, normals, indices, textureCoordArr, normalArr);
+        }
+
+        int[] indicesArr = indices.stream().mapToInt((Integer v) -> v).toArray();
+
+        return loadModel(verticesArr, textureCoordArr, indicesArr);
+    }
+
+
+    private static void processVertex(
+        int pos, int textureCoord, int normal,
+        List<Vector2f> texCoordList, 
+        List<Vector3f> normalList,
+        List<Integer> indicesList,
+        float[] texCoordArr, float[] normalArr
+    ){
+        indicesList.add(pos);
+
+        if(textureCoord >= 0 ){
+            Vector2f texCoordVec = texCoordList.get(textureCoord);
+            texCoordArr[pos * 2] = texCoordVec.x;
+            texCoordArr[pos * 2 + 1] = 1 - texCoordVec.y;
+        }
+
+        if (normal >= 0){
+            Vector3f normalVec = normalList.get(normal);
+            normalArr[pos * 3] = normalVec.x;
+            normalArr[pos * 3 + 1] = normalVec.y;
+            normalArr[pos * 3 + 2] = normalVec.z;
+        }
+
+
+    }
+
+    //pass the correspoding values into face
+    private static void processFace(String token, List<Vector3i> faces){
+        
+        String[] lineToken = token.split("/");
+        int length = lineToken.length;
+
+        //default to -1
+        int pos = -1;
+        int coords = -1;
+        int normal = -1;
+
+        pos = Integer.parseInt(lineToken[0]) - 1;
+
+        if (length > 1){
+            String textCoord = lineToken[1];
+            coords = textCoord.length() > 0 ? Integer.parseInt(textCoord) - 1 : -1; //ehh un capo ehhhhh en vez de un if largo eehh, i think you can use this in many other places in the code, good luck finding them and feel free to replace :)
+            
+            if (length >  2){
+                normal = Integer.parseInt(lineToken[2]) - 1;
+            }
+
+            Vector3i facesVec = new Vector3i(pos, coords, normal);
+            faces.add(facesVec);
+        }
+    }
 
     public Model loadModel(float[] vertices, float[] textureCoords, int[] indices){
         int id = createVAO();
